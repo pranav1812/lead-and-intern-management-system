@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTheme } from '@material-ui/core/styles';
 import { LineChart, Line, XAxis, YAxis, Label, ResponsiveContainer } from 'recharts';
-import Title from './Title';
+import {useParams} from 'react-router'
 
 // Generate Sales Data
 function createData(time, amount) {
@@ -22,10 +22,10 @@ const data = [
 
 export default function Chart() {
   const theme = useTheme();
-
+  const {uid}= useParams();
   return (
     <React.Fragment>
-      <Title>Today</Title>
+      
       <ResponsiveContainer>
         <LineChart
           data={data}
@@ -43,7 +43,7 @@ export default function Chart() {
               position="left"
               style={{ textAnchor: 'middle', fill: theme.palette.text.primary }}
             >
-              Sales ($)
+              {uid}
             </Label>
           </YAxis>
           <Line type="monotone" dataKey="amount" stroke={theme.palette.primary.main} dot={false} />

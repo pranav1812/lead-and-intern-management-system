@@ -3,8 +3,6 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
@@ -13,12 +11,13 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import {auth} from '../firebase';
+import * as firebase from 'firebase'
 
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <Link color="inherit" href="https://material-ui.com/">
+      <Link color="inherit" href="https://www.taleoface.com/" target='blank' >
         Tale Of Ace
       </Link>{' '}
       {new Date().getFullYear()}
@@ -62,18 +61,89 @@ export default function SignInSide() {
   const classes = useStyles();
 
   const [newUser, togglenewUser]= useState(false)
-  const [user, toggleUser]= useState(null)
- 
+  const [usr, setUsr]= useState()
+  const [mail, setMail]= useState(null)
+  const [pass, setPass]= useState(null)
+  const [name, setName]= useState(null)
+
   const toggle=()=>{
       togglenewUser(!newUser)
   }
 
-  // if user changes from null to something
-  useEffect(() => {
-    var user=auth.currentUser
-    // if(user!= null) window.location="youtube.com"
-    // else if(!user.emailVerified) window.location="github.com"
-  }, [user, newUser])
+  useEffect(()=>{
+    // alert(auth.currentUser)
+    auth.onAuthStateChanged(user=>{
+    if(! user){
+      console.log("signin/signup")
+    }
+    else if(!user.emailVerified){
+      user.sendEmailVerification().then(function() {
+        alert("you need to verify your email 1st, verification mail was sent to your registered email")
+      }).catch(function(error) {
+        console.log(error)
+      });
+    }
+    else{
+      // window.location='http://localhost:3000/dashboard'
+      window.location.reload()
+    }    
+    })    
+  }, [])
+
+  const signupEmail=()=>{
+    if(mail && pass && name)
+    { 
+      auth.createUserWithEmailAndPassword(mail, pass).catch((error)=> {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.error(errorCode, errorMessage)
+      });   
+      auth.onAuthStateChanged(user=>{
+        if(user)
+        {user.updateProfile({
+          displayName: name
+        })
+        window.location.reload()}
+      })
+    }else{
+      alert("email and password required")
+    }
+  }
+
+  const googleSignup=()=>{
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(function(result) {
+      var user = result.user;
+      
+    }).catch(function(error) {
+      var errorMessage = error.message;
+      console.log(errorMessage)
+    });
+  }
+
+  const emailLogin=()=>{
+    if(mail && pass){
+      auth.signInWithEmailAndPassword(mail, pass).catch(function(error) {
+        var errorMessage = error.message;
+        console.error("errorMessage")
+      });
+      console.log(auth.currentUser)
+      setUsr(auth.currentUser)
+       
+    }else{
+      alert("email and password required")
+    }   
+  }
+
+  // if user changes from null to something\
+
+  /*--------------------------------*/
+  
+  // useEffect(() => {
+  //   var user=auth.currentUser
+  //   // if(user!= null) window.location="youtube.com"
+  //   // else if(!user.emailVerified) window.location="github.com"
+  // }, [user, newUser])
 
   return (
     <Grid container component="main" className={classes.root}>
@@ -85,7 +155,7 @@ export default function SignInSide() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            {newUser? "Sign Up" : "Sign In"}
           </Typography>
           <form className={classes.form} noValidate>
             {
@@ -100,6 +170,7 @@ export default function SignInSide() {
                     name="name"
                     autoComplete="name"
                     autoFocus
+                    onBlur={(e)=> {setName(e.target.value)}}
                 />:null
             }
             <TextField
@@ -109,8 +180,9 @@ export default function SignInSide() {
               fullWidth
               id="email"
               label="Email Address"
-              name="email"
-              autoComplete="email"
+              name="email"  
+                      
+              onBlur={(e)=> {setMail(e.target.value)}}
             />
             <TextField
               variant="outlined"
@@ -120,8 +192,9 @@ export default function SignInSide() {
               name="password"
               label="Password"
               type="password"
-              id="password"
-              autoComplete="current-password"
+              id="password"   
+                    
+              onBlur={(e)=> {setPass(e.target.value)}}
             />
             
             <Button
@@ -130,6 +203,7 @@ export default function SignInSide() {
               variant="contained"
               color="primary"
               className={classes.submit}
+              onClick={newUser? signupEmail: emailLogin}
             >
               { newUser? "Sign Up":"Sign In"}
             </Button>
@@ -138,7 +212,8 @@ export default function SignInSide() {
               fullWidth
               variant="contained"
               color="primary"
-              className={classes.submit}
+              className={classes.submit}             
+              onClick={googleSignup}
             >
               { newUser? "Sign Up with Google":"Sign In with Google"}
             </Button>

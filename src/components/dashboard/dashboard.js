@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -10,26 +10,31 @@ import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import Link from '@material-ui/core/Link';
+import {BrowserRouter as Router, Route, Switch, Link} from 'react-router-dom'
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import { mainListItems, secondaryListItems } from './listItems';
-import Chart from './Chart';
-import Deposits from './Deposits';
-import Orders from './Orders';
+import MyLeads from './myLeads';
+import Profile from './profile'
+import {auth, db} from '../../firebase'
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import Lead from './lead'
+import AllLeads from './allLeads'
+
 
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <Link color="inherit" href="https://material-ui.com/">
-        Your Website
-      </Link>{' '}
+      <a color="inherit" href="https://www.taleoface.com/" target='blank'>
+        Tale Of Ace
+      </a>{' '}
       {new Date().getFullYear()}
       {'.'}
     </Typography>
@@ -43,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
   },
   toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
+    paddingRight: 24, 
   },
   toolbarIcon: {
     display: 'flex',
@@ -119,16 +124,40 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Dashboard() {
   const classes = useStyles();
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = useState(true);
   const handleDrawerOpen = () => {
     setOpen(true);
   };
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+  const [name, setName]= useState(null)
+  const [uid, setUid]= useState(null)
+  useEffect(()=>{
+    
+    auth.onAuthStateChanged(user=>{
+      if(user){
+        setUid(user.uid)
+        db.collection('Interns').doc(user.uid).get()
+        .then(doc=>{
+          if (doc.exists)
+            setName(doc.data().name)
+        })
+      }
+    })
+    
+  }, [])
 
+  const logout=()=>{
+    auth.signOut().then(function() {
+      console.log("Sign-out successful")
+      window.location.reload()
+    }).catch(function(error) {
+      console.log(error)
+    })
+  }
   return (
+    <Router>
     <div className={classes.root}>
       <CssBaseline />
       <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
@@ -143,13 +172,9 @@ export default function Dashboard() {
             <MenuIcon />
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-            Dashboard
+            {name? name+"'s dashboard": null}
           </Typography>
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="secondary">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
+          
         </Toolbar>
       </AppBar>
       <Drawer
@@ -165,32 +190,51 @@ export default function Dashboard() {
           </IconButton>
         </div>
         <Divider />
-        <List>{mainListItems}</List>
+        <List>
+          <div>
+          <Link to={'/profile/'+uid}>
+            <ListItem button>             
+                <ListItemIcon>
+                  <DashboardIcon />
+                </ListItemIcon>
+              <ListItemText primary="Profile" />              
+            </ListItem>
+            </Link>
+            <Link to={'/myLeads/'+ uid}>
+            <ListItem button>
+              <ListItemIcon>
+                <ShoppingCartIcon />
+              </ListItemIcon>
+              <ListItemText primary="My Leads" />
+            </ListItem>
+            </Link>
+            <ListItem button onClick={logout}>             
+                <ListItemIcon>
+                  <DashboardIcon />
+                </ListItemIcon>
+              <ListItemText primary="Logout" />              
+            </ListItem>
+                      
+          </div>
+        </List>
         <Divider />
-        <List>{secondaryListItems}</List>
+        
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
-          <Grid container spacing={3}>
+        <Container className={classes.container}>
+          <Grid container spacing={3} >
             {/* Chart */}
-            <Grid item xs={12} md={8} lg={9}>
-              <Paper className={fixedHeightPaper}>
-                <Chart />
+            
+              <Paper style={{width: '100%'}}>
+                <Switch>
+                  <Route exact path='/profile/:uid' component={Profile} />
+                  <Route exact path='/myLeads/:uid' component={MyLeads} />
+                  <Route exact path='/allLeads' component={AllLeads} />
+                  <Route exact path='/lead/:lid' component={Lead} />
+                  
+                </Switch>
               </Paper>
-            </Grid>
-            {/* Recent Deposits */}
-            <Grid item xs={12} md={4} lg={3}>
-              <Paper className={fixedHeightPaper}>
-                <Deposits />
-              </Paper>
-            </Grid>
-            {/* Recent Orders */}
-            <Grid item xs={12}>
-              <Paper className={classes.paper}>
-                <Orders />
-              </Paper>
-            </Grid>
           </Grid>
           <Box pt={4}>
             <Copyright />
@@ -198,5 +242,6 @@ export default function Dashboard() {
         </Container>
       </main>
     </div>
+    </Router>
   );
 }
