@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Lead() {
+export default function Client() {
 
   const [header, setHeader]= useState({
     name: null,
@@ -23,7 +23,7 @@ export default function Lead() {
     interests: []
   })
   const [notes, setNotes]= useState(null)
-  const [rec, setRec]= useState(null)
+  const [status, setStatus]= useState(null)
   const [url, setUrl]= useState(null)
   const [date, setDate]= useState(null)
 
@@ -32,7 +32,7 @@ export default function Lead() {
 
   useEffect(()=>{
     if(lid)
-    {db.collection('Leads').doc(lid).get()
+    {db.collection('Clients').doc(lid).get()
       .then(doc=>{
         // console.log(doc.data())
         if(doc.exists){
@@ -46,7 +46,7 @@ export default function Lead() {
           setTouchpoints(doc.data().touchpoints)
         }
         else
-          alert("lead is no longer available")
+          alert("This client is no longer available")
       })}
   }, [])
 
@@ -60,12 +60,13 @@ export default function Lead() {
 
       today = dd + '/' + mm + '/' + yyyy;
     
-    db.collection('Leads').doc(lid).update({     
+    db.collection('Clients').doc(lid).update({     
       touchpoints: firebase.firestore.FieldValue.arrayUnion({
         timeStamp: today,
         date: date,
         recording: url,
-        notes: notes
+        notes: notes,
+        type: status
       })
     }).then(()=> window.location.reload())
     
@@ -89,7 +90,7 @@ export default function Lead() {
 
   }
   const deleteLead=()=>{
-    db.collection('Leads').doc(lid).delete()
+    db.collection('Clients').doc(lid).delete()
       .then(()=>{window.location.reload()})
       .catch(err=>console.error(err))
   }
@@ -98,7 +99,7 @@ export default function Lead() {
    
     var temp=[]
     console.log(temp)
-    var ref= db.collection('Leads').doc(lid)
+    var ref= db.collection('Clients').doc(lid)
     ref.get()
       .then(doc=>{
         temp=doc.data().touchpoints 
@@ -110,32 +111,21 @@ export default function Lead() {
       })
   }
   
-  const changeStatus=(e)=>{ 
-    db.collection('Leads').doc(lid).update({
-      status: e.target.value
-    })
-  }
   
   const classes = useStyles();
   return (
     <div style={{marginLeft: '2em', marginBottom:'3em'}}>
         <h2>Name: {header.name} </h2>
         <h2>Added on: {header.addedOn} </h2>
+        <h2>No. of Sessions: {header.nSessions} </h2>
+        <h2>Sessions Left: {header.nSessionsLeft} </h2>
         <h2>Interests: {header.interests} </h2>
         <h2>mail: {header.mail} </h2>
         <h2>phone: {header.phone} </h2>
         <br />
         <button onClick={deleteLead} >Delete Lead</button>
-        {"          "}
-
-        <select onChange={changeStatus} >
-          <option default selected>--Change Status--</option>
-          <option value="Cold">Cold</option>
-          <option value="Not Qualified">Not Qualified</option>
-          <option value="Qualified">Qualified</option>
-          <option value="Converted">Converted</option>
-        </select><br />
         <br />
+
     <React.Fragment>
       
       <Table size="small" style={{marginBottom:'2em'}}>
@@ -143,18 +133,18 @@ export default function Lead() {
           <TableRow>
             <TableCell>Time Stamp</TableCell>
             <TableCell>Date</TableCell>
+            <TableCell>Type</TableCell>
             <TableCell>Notes</TableCell>
             <TableCell> Recording</TableCell>
             <TableCell> Delete</TableCell>
-
           </TableRow>
         </TableHead>
         <TableBody>
           {touchpoints? touchpoints.map((row, index) => (
-            
             <TableRow >
               <TableCell>{row.timeStamp}</TableCell>
               <TableCell>{row.date}</TableCell>
+              <TableCell>{row.type}</TableCell>
               <TableCell>{row.notes}</TableCell>
               <TableCell><a href={row.recording? row.recording.url: null} target='blank' >Recording</a></TableCell>
               <TableCell><button onClick={()=>{deleteTp(index)}} >Delete</button></TableCell>
@@ -171,7 +161,13 @@ export default function Lead() {
 
       <lable htmlFor='recording'>Recording</lable><br />
       <input type='file' name='recording' onChange={addFile} /><br /><br />
-      <button type='button' onClick={addTouchpoint}>Add Touchpoint</button><br />
+   
+        <select onChange={(e)=>{setStatus(e.target.value)}} >
+          <option default selected>--Touchpoint Type--</option>
+          <option value="Consultancy Call">Consultancy Call</option>
+          <option value="Accountability Call">Accountability Call</option>          
+        </select><br />
+        <button type='button' onClick={addTouchpoint}>Add Touchpoint</button><br />
     </React.Fragment>
     </div>
   );

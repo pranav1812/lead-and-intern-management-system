@@ -6,7 +6,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import {useParams} from 'react-router'
-import {auth, db} from '../../firebase'
+import {auth, db, storage} from '../../firebase'
 
 
 function preventDefault(event) {
@@ -19,17 +19,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function MyLeads() {
+export default function MyClients() {
   const classes = useStyles();
   const [name, setName]= useState(null)
   const [interest, setInterest]= useState(null)
   const [leads, setLeads]= useState(null)
   const [mail, setMail]= useState(null)
   const [phone, setPhone]= useState(null)
+  const [url, setUrl]= useState(null)
   const {uid}= useParams()
 
   const addLead=()=>{
-    if(name && interest && mail && phone){
+    if(name && url && mail && phone){
 
       var today = new Date();
       var dd = String(today.getDate()).padStart(2, '0');
@@ -37,25 +38,28 @@ export default function MyLeads() {
       var yyyy = today.getFullYear();
       today = dd + '/' + mm + '/' + yyyy;
 
-      db.collection('Leads').add({
+      db.collection('Clients').add({
         name: name,
         interests: interest,
-        
+        pdf: url,
         handler: uid,
         touchpoints: [],
         addedOn: today,
         mail: mail,
         phone: phone
+      }).then(()=>{
+        alert("client added")
+        window.location.reload()
       })
 
-      alert("lead added successfully")
+      
     }else{
-      alert("name and interest field are important")
+      alert("name, pdf, mail and phone are important")
     }
   }
 
   useEffect(() => {
-    db.collection('Leads').where("handler", "==", uid).get()
+    db.collection('Clients').where("handler", "==", uid).get()
       .then(snapshots=>{
         var temp=[]
         snapshots.forEach(doc=>{
@@ -65,6 +69,19 @@ export default function MyLeads() {
       })
     
   }, [])
+
+  const addFile=(e)=>{
+    var file= e.target.files[0]
+    var storageRef= storage.ref('trainingPDFs/'+file.name)
+    storageRef.put(file).then(()=> {
+      alert("you can now add your client")
+      storageRef.getDownloadURL()
+        .then(url=> setUrl({url}))
+        .catch(err=> console.log(err))
+    })
+    .catch(err=> console.log(err))
+
+  }
 
   return (
     <React.Fragment>
@@ -77,6 +94,8 @@ export default function MyLeads() {
       <input type='text' onBlur={e=>{setPhone(e.target.value)}} /><br /><br />
       <lable>Email</lable><br />
       <input type='email' onBlur={e=>{setMail(e.target.value)}} /><br /><br />
+      <lable>Training PDF</lable><br />
+      <input type='file' onChange={addFile} /><br /><br />
       <button type='button' onClick={addLead}>Add Lead</button><br />
       <Table size="small">
         <TableHead>
@@ -92,7 +111,7 @@ export default function MyLeads() {
           {leads? leads.map((row) => (
             <TableRow key={row.id}>
               <TableCell>{row.addedOn}</TableCell>
-              <TableCell><a href={window.location.protocol + "//" + window.location.host + "/" +'lead/'+row.id} target= 'blank'>{row.name}</a> </TableCell>
+              <TableCell><a href={window.location.protocol + "//" + window.location.host + "/" +'client/'+row.id} target= 'blank'>{row.name}</a> </TableCell>
               <TableCell>{row.interests}</TableCell>
               <TableCell>{row.status || "cold"}</TableCell>
             </TableRow>

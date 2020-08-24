@@ -25,7 +25,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import Lead from './lead'
+import MyClients from './myClients'
 import AllLeads from './allLeads'
+import Client from "./client";
 
 
 function Copyright() {
@@ -124,6 +126,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Dashboard() {
   const classes = useStyles();
+  const [consultant, setConsultant]= useState(false)
   const [open, setOpen] = useState(true);
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -142,6 +145,7 @@ export default function Dashboard() {
         .then(doc=>{
           if (doc.exists)
             setName(doc.data().name)
+            setConsultant(doc.data().isAdmin)
         })
       }
     })
@@ -208,6 +212,18 @@ export default function Dashboard() {
               <ListItemText primary="My Leads" />
             </ListItem>
             </Link>
+            {
+              consultant?(
+              <Link to={'/myClients/'+ uid}>
+                <ListItem button>
+                  <ListItemIcon>
+                    <ShoppingCartIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="My Clients" />
+                </ListItem>
+              </Link>
+              ): null
+            }
             <ListItem button onClick={logout}>             
                 <ListItemIcon>
                   <DashboardIcon />
@@ -230,9 +246,10 @@ export default function Dashboard() {
                 <Switch>
                   <Route exact path='/profile/:uid' component={Profile} />
                   <Route exact path='/myLeads/:uid' component={MyLeads} />
+                  <Route exact path='/myClients/:uid' component={MyClients} />
                   <Route exact path='/allLeads' component={AllLeads} />
-                  <Route exact path='/lead/:lid' component={Lead} />
-                  
+                  <Route exact path='/lead/:lid' component={Lead} />  
+                  <Route exact path='/client/:lid' component={Client} />                  
                 </Switch>
               </Paper>
           </Grid>
