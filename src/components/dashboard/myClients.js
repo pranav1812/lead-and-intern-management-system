@@ -27,7 +27,9 @@ export default function MyClients() {
   const [mail, setMail]= useState(null)
   const [phone, setPhone]= useState(null)
   const [url, setUrl]= useState(null)
+  const [sessions, setSessions]= useState(null)
   const {uid}= useParams()
+  
 
   const addLead=()=>{
     if(name && url && mail && phone){
@@ -46,7 +48,10 @@ export default function MyClients() {
         touchpoints: [],
         addedOn: today,
         mail: mail,
-        phone: phone
+        phone: phone,
+        sessions: sessions,
+        sessionsDone: "0"
+
       }).then(()=>{
         alert("client added")
         window.location.reload()
@@ -85,7 +90,7 @@ export default function MyClients() {
 
   return (
     <React.Fragment>
-      <h2>Add New Lead</h2>
+      <h2>Add New Client</h2>
       <lable >Name</lable><br />
       <input placeholder="eg. Binod" onBlur={(e)=>{setName(e.target.value)}}  /><br /><br />
       <lable>Interests</lable><br />
@@ -94,16 +99,18 @@ export default function MyClients() {
       <input type='text' onBlur={e=>{setPhone(e.target.value)}} /><br /><br />
       <lable>Email</lable><br />
       <input type='email' onBlur={e=>{setMail(e.target.value)}} /><br /><br />
+      <lable>No. of Sessions</lable><br />
+      <input type='text' onBlur={e=>{setSessions(e.target.value)}} /><br /><br />
       <lable>Training PDF</lable><br />
       <input type='file' onChange={addFile} /><br /><br />
-      <button type='button' onClick={addLead}>Add Lead</button><br />
+      <button type='button' onClick={addLead}>Add Client</button><br />
       <Table size="small">
         <TableHead>
           <TableRow>
             <TableCell>Added On</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Interests</TableCell>         
-            <TableCell>Status</TableCell>         
+               
 
           </TableRow>
         </TableHead>
@@ -113,7 +120,7 @@ export default function MyClients() {
               <TableCell>{row.addedOn}</TableCell>
               <TableCell><a href={window.location.protocol + "//" + window.location.host + "/" +'client/'+row.id} target= 'blank'>{row.name}</a> </TableCell>
               <TableCell>{row.interests}</TableCell>
-              <TableCell>{row.status || "cold"}</TableCell>
+              
             </TableRow>
           )): null}
         </TableBody>

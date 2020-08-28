@@ -17,16 +17,27 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Client() {
 
+  const [newHeader, setNewHeader]= useState({
+    name: null,
+    interests: null,
+    mail: null,
+    phone: null
+  })
+
   const [header, setHeader]= useState({
     name: null,
     addedOn: null,
-    interests: []
+    interests: null,
+    sessions: null,
+    sessionsDone: null,
+    mail: null,
+    phone: null
   })
   const [notes, setNotes]= useState(null)
   const [status, setStatus]= useState(null)
   const [url, setUrl]= useState(null)
   const [date, setDate]= useState(null)
-
+  const [specialNote, setSpecialNote]= useState(null)
   const [touchpoints, setTouchpoints]= useState()
   const {lid}= useParams()
 
@@ -34,14 +45,17 @@ export default function Client() {
     if(lid)
     {db.collection('Clients').doc(lid).get()
       .then(doc=>{
-        // console.log(doc.data())
+        // interests are stored as a plain string.... change to array later
         if(doc.exists){
           setHeader({
             name: doc.data().name,
             addedOn: doc.data().addedOn,
             interests: doc.data().interests,
             phone: doc.data().phone,
-            mail: doc.data().mail
+            mail: doc.data().mail,
+            sessions: Number(doc.data().sessions),
+            sessionsDone: Number(doc.data().sessionsDone),
+            caseHistory: doc.data().caseHistory
           })
           setTouchpoints(doc.data().touchpoints)
         }
@@ -50,6 +64,13 @@ export default function Client() {
       })}
   }, [])
 
+  const editHeader=()=>{
+    db.collection('Clients').doc(lid).update({
+      name: newHeader.name && newHeader.name.trim()!=""? newHeader.name: header.name,
+      mail: newHeader.mail && newHeader.mail.trim()!=""? newHeader.mail: header.mail,
+      phone: newHeader.phone && newHeader.phone.trim()!=""? newHeader.phone: header.phone
+    }).then(()=>window.location.reload())
+  }
   const addTouchpoint=()=>{
 
     if(notes && date){
@@ -59,24 +80,27 @@ export default function Client() {
       var yyyy = today.getFullYear();
 
       today = dd + '/' + mm + '/' + yyyy;
-    
-    db.collection('Clients').doc(lid).update({     
-      touchpoints: firebase.firestore.FieldValue.arrayUnion({
-        timeStamp: today,
-        date: date,
-        recording: url,
-        notes: notes,
-        type: status
-      })
-    }).then(()=> window.location.reload())
-    
+
+      
+      db.collection('Clients').doc(lid).update({      
+        sessionsDone: status=="Consultancy Call"? header.sessionsDone+1: header.sessionsDone ,      
+        touchpoints: firebase.firestore.FieldValue.arrayUnion({
+          timeStamp: today,
+          date: date,
+          recording: url,
+          notes: notes,
+          type: status
+        }),
+        caseHistory: specialNote && specialNote.trim()!=""? firebase.firestore.FieldValue.arrayUnion(specialNote) : header.caseHistory
+      }).then(()=> window.location.reload())
+      
+      }
+      else{
+        alert("notes and recording files can not be empty")
+      }
     }
-    else{
-      alert("notes and recording files can not be empty")
-    }
-  }
     
-  // const {leadId}= useParams()
+  
   const addFile=(e)=>{
     var file= e.target.files[0]
     var storageRef= storage.ref('recordings/'+file.name)
@@ -103,7 +127,7 @@ export default function Client() {
     ref.get()
       .then(doc=>{
         temp=doc.data().touchpoints 
-        temp.splice(index, index+1)
+        temp.splice(index, index)
         ref.update({
           touchpoints: temp
         }).then(()=>window.location.reload())
@@ -117,13 +141,17 @@ export default function Client() {
     <div style={{marginLeft: '2em', marginBottom:'3em'}}>
         <h2>Name: {header.name} </h2>
         <h2>Added on: {header.addedOn} </h2>
-        <h2>No. of Sessions: {header.nSessions} </h2>
-        <h2>Sessions Left: {header.nSessionsLeft} </h2>
+        <h2>No. of Sessions: {header.sessions} </h2>
+        <h2>Sessions Left: {header.sessions-header.sessionsDone} </h2>
         <h2>Interests: {header.interests} </h2>
         <h2>mail: {header.mail} </h2>
         <h2>phone: {header.phone} </h2>
+        <h2>Case History:</h2>
+        <p style={{marginLeft:'3em', fontSize: '1.3em'}}>
+          {header.caseHistory? header.caseHistory.map(ch=><li>{ch}</li>):"nothing added yet"}
+        </p>
         <br />
-        <button onClick={deleteLead} >Delete Lead</button>
+        <button onClick={deleteLead} >Delete Client</button>
         <br />
 
     <React.Fragment>
@@ -156,6 +184,9 @@ export default function Client() {
       <lable htmlFor='notes'>Notes</lable><br />
       <textarea style={{width: '80%', height: '20em'}} name='notes' onBlur={(e)=>{setNotes(e.target.value)}}  /><br /><br />
 
+      <lable htmlFor='case_history'>Add to Case History </lable><br />
+      <input type='text' name='case_history' style={{width: '80%'}} onBlur={(e)=>{setSpecialNote(e.target.value)}} /><br /><br />
+
       <lable htmlFor='date'>Date</lable><br />
       <input type="date" name='date' onChange={(e)=>{setDate(e.target.value)}}  /><br /><br />
 
@@ -166,8 +197,19 @@ export default function Client() {
           <option default selected>--Touchpoint Type--</option>
           <option value="Consultancy Call">Consultancy Call</option>
           <option value="Accountability Call">Accountability Call</option>          
-        </select><br />
-        <button type='button' onClick={addTouchpoint}>Add Touchpoint</button><br />
+        </select><br /><br />
+        <button type='button' onClick={addTouchpoint}>Add Touchpoint</button><br /><br /><br /><br />
+        <h2>Edit Info</h2><br />
+        <lable htmlFor='new_name'>Name </lable><br />
+        <input type='text' name='new_name' style={{width: '80%'}} onBlur={(e)=>{setNewHeader({ ...newHeader,  name:e.target.value})}} /><br /><br />
+
+        <lable htmlFor='new_mail'>Email </lable><br />
+        <input type='email' name='new_mail' style={{width: '80%'}} onBlur={(e)=>{setNewHeader({ ...newHeader,  mail:e.target.value})}} /><br /><br />
+
+        <lable htmlFor='new_phone'>Phone </lable><br />
+        <input type='text' name='new_phone' style={{width: '80%'}} onBlur={(e)=>{setNewHeader({ ...newHeader,  phone:e.target.value})}} /><br /><br />
+        <button type='button' onClick={editHeader}>Edit</button><br /><br /><br /><br />
+
     </React.Fragment>
     </div>
   );

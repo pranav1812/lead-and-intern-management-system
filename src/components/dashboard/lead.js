@@ -16,14 +16,22 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Lead() {
+  const [newHeader, setNewHeader]= useState({
+    name: null,
+    interests: null,
+    mail: null,
+    phone: null
+  })
 
   const [header, setHeader]= useState({
     name: null,
     addedOn: null,
-    interests: []
+    interests: null,
+    caseHistory: null
   })
   const [notes, setNotes]= useState(null)
   const [rec, setRec]= useState(null)
+  const [specialNote, setSpecialNote]= useState(null)
   const [url, setUrl]= useState(null)
   const [date, setDate]= useState(null)
 
@@ -41,7 +49,8 @@ export default function Lead() {
             addedOn: doc.data().addedOn,
             interests: doc.data().interests,
             phone: doc.data().phone,
-            mail: doc.data().mail
+            mail: doc.data().mail,
+            caseHistory: doc.data().caseHistory
           })
           setTouchpoints(doc.data().touchpoints)
         }
@@ -66,13 +75,21 @@ export default function Lead() {
         date: date,
         recording: url,
         notes: notes
-      })
+      }),
+      caseHistory: header.caseHistory? specialNote && specialNote.trim()!=""? firebase.firestore.FieldValue.arrayUnion(specialNote) : header.caseHistory: [specialNote]
     }).then(()=> window.location.reload())
     
     }
     else{
       alert("notes and recording files can not be empty")
     }
+  }
+  const editHeader=()=>{
+    db.collection('Leads').doc(lid).update({
+      name: newHeader.name && newHeader.name.trim()!=""? newHeader.name: header.name,
+      mail: newHeader.mail && newHeader.mail.trim()!=""? newHeader.mail: header.mail,
+      phone: newHeader.phone && newHeader.phone.trim()!=""? newHeader.phone: header.phone
+    }).then(()=>window.location.reload())
   }
     
   // const {leadId}= useParams()
@@ -125,7 +142,14 @@ export default function Lead() {
         <h2>mail: {header.mail} </h2>
         <h2>phone: {header.phone} </h2>
         <br />
+        <h2>Case History:</h2>
+        <p style={{marginLeft:'3em', fontSize: '1.3em'}}>
+          {header.caseHistory? header.caseHistory.map(ch=><li>{ch}</li>):"nothing added yet"}
+        </p>
+        <br />
         <button onClick={deleteLead} >Delete Lead</button>
+        <br />
+        
         {"          "}
 
         <select onChange={changeStatus} >
@@ -165,13 +189,28 @@ export default function Lead() {
 
       <lable htmlFor='notes'>Notes</lable><br />
       <textarea style={{width: '80%', height: '20em'}} name='notes' onBlur={(e)=>{setNotes(e.target.value)}}  /><br /><br />
+      
+      <lable htmlFor='case_history'>Add to Case History </lable><br />
+      <input type='text' name='case_history' style={{width: '80%'}} onBlur={(e)=>{setSpecialNote(e.target.value)}} /><br /><br />
 
       <lable htmlFor='date'>Date</lable><br />
       <input type="date" name='date' onChange={(e)=>{setDate(e.target.value)}}  /><br /><br />
 
       <lable htmlFor='recording'>Recording</lable><br />
       <input type='file' name='recording' onChange={addFile} /><br /><br />
-      <button type='button' onClick={addTouchpoint}>Add Touchpoint</button><br />
+      <button type='button' onClick={addTouchpoint}>Add Touchpoint</button><br /><br />
+
+      <h2>Edit Info</h2><br />
+        <lable htmlFor='new_name'>Name </lable><br />
+        <input type='text' name='new_name' style={{width: '80%'}} onBlur={(e)=>{setNewHeader({ ...newHeader,  name:e.target.value})}} /><br /><br />
+
+        <lable htmlFor='new_mail'>Email </lable><br />
+        <input type='email' name='new_mail' style={{width: '80%'}} onBlur={(e)=>{setNewHeader({ ...newHeader,  mail:e.target.value})}} /><br /><br />
+
+        <lable htmlFor='new_phone'>Phone </lable><br />
+        <input type='text' name='new_phone' style={{width: '80%'}} onBlur={(e)=>{setNewHeader({ ...newHeader,  phone:e.target.value})}} /><br /><br />
+        <button type='button' onClick={editHeader}>Edit</button><br /><br /><br /><br />
+
     </React.Fragment>
     </div>
   );
