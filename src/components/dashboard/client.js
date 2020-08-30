@@ -55,7 +55,8 @@ export default function Client() {
             mail: doc.data().mail,
             sessions: Number(doc.data().sessions),
             sessionsDone: Number(doc.data().sessionsDone),
-            caseHistory: doc.data().caseHistory
+            caseHistory: doc.data().caseHistory,
+            engagement: doc.data().engagement
           })
           setTouchpoints(doc.data().touchpoints)
         }
@@ -146,6 +147,7 @@ export default function Client() {
         <h2>Interests: {header.interests} </h2>
         <h2>mail: {header.mail} </h2>
         <h2>phone: {header.phone} </h2>
+        <h2>engagement period: {header.engagement} </h2>
         <h2>Case History:</h2>
         <p style={{marginLeft:'3em', fontSize: '1.3em'}}>
           {header.caseHistory? header.caseHistory.map(ch=><li>{ch}</li>):"nothing added yet"}

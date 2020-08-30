@@ -25,6 +25,7 @@ export default function MyClients() {
   const [interest, setInterest]= useState(null)
   const [leads, setLeads]= useState(null)
   const [mail, setMail]= useState(null)
+  const [engagement, setEngagement]= useState(null)
   const [phone, setPhone]= useState(null)
   const [url, setUrl]= useState(null)
   const [sessions, setSessions]= useState(null)
@@ -50,7 +51,8 @@ export default function MyClients() {
         mail: mail,
         phone: phone,
         sessions: sessions,
-        sessionsDone: "0"
+        sessionsDone: "0",
+        engagement: engagement
 
       }).then(()=>{
         alert("client added")
@@ -99,6 +101,8 @@ export default function MyClients() {
       <input type='text' onBlur={e=>{setPhone(e.target.value)}} /><br /><br />
       <lable>Email</lable><br />
       <input type='email' onBlur={e=>{setMail(e.target.value)}} /><br /><br />
+      <lable>Engagement Period</lable><br />
+      <input type='text' onBlur={e=>{setEngagement(e.target.value)}} /><br /><br />
       <lable>No. of Sessions</lable><br />
       <input type='text' onBlur={e=>{setSessions(e.target.value)}} /><br /><br />
       <lable>Training PDF</lable><br />
