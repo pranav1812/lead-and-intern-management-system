@@ -125,7 +125,7 @@ export default function SignInSide() {
     if(mail && pass){
       auth.signInWithEmailAndPassword(mail, pass).catch(function(error) {
         var errorMessage = error.message;
-        console.error("errorMessage")
+        console.error(errorMessage)
       });
       console.log(auth.currentUser)
       setUsr(auth.currentUser)

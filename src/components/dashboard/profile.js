@@ -4,15 +4,20 @@ import {useParams} from 'react-router'
 
 export default function Profile() {
 
-    const {uid}= useParams()
+    var {uid}= useParams() 
     const [name, setname]= useState(null)
     const [start, setStart]= useState(null)
     const [end, setEnd]= useState(null)
     const [nLeads, setNLeads]= useState(null)  
     
     useEffect(()=>{
-        db.collection('Interns').doc(uid).get()
-            .then(doc=>{
+        auth.onAuthStateChanged(user=>{
+            if(user){
+                if (!uid){
+                    uid= user.uid
+                }
+                db.collection('Interns').doc(uid).get()
+                .then(doc=>{
                 if(doc.exists){
                     setname(doc.data().name)
                     setStart(doc.data().joinedOn)
@@ -21,17 +26,21 @@ export default function Profile() {
                     alert("profile not found")
                 }
 
-            })
-            .catch(err=>{alert("some error occured profile information")})
+                })
+                .catch(err=>{alert("some error occured profile information")})
 
-        db.collection('Leads').where("handler", "==", uid).get()
-            .then(snapShots=>{
-                var temp=0
-                snapShots.forEach(doc=> temp++)
-                setNLeads(temp)
+            db.collection('Leads').where("handler", "==", uid).get()
+                .then(snapShots=>{
+                    var temp=0
+                    snapShots.forEach(doc=> temp++)
+                    setNLeads(temp)
+                })
+                .catch(err=> console.error(err))
+                    }
+                
             })
-            .catch(err=> console.error(err))
-    }, [])
+            
+        }, [])
     return (
         <div>
             <h2>Name: {name}</h2>

@@ -9,18 +9,9 @@ import {useParams} from 'react-router'
 import {auth, db, storage} from '../../firebase'
 
 
-function preventDefault(event) {
-  event.preventDefault();
-}
-
-const useStyles = makeStyles((theme) => ({
-  seeMore: {
-    marginTop: theme.spacing(3),
-  },
-}));
 
 export default function MyClients() {
-  const classes = useStyles();
+  
   const [name, setName]= useState(null)
   const [interest, setInterest]= useState(null)
   const [leads, setLeads]= useState(null)
@@ -70,7 +61,7 @@ export default function MyClients() {
       .then(snapshots=>{
         var temp=[]
         snapshots.forEach(doc=>{
-          temp.push({... doc.data(), id: doc.id})
+          temp.push({...doc.data(), id: doc.id})
         })
         setLeads(temp)
       })

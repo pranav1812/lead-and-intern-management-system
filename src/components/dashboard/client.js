@@ -1,19 +1,13 @@
 import React, {useState, useEffect} from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import {auth, db, storage} from '../../firebase'
+import {db, storage} from '../../firebase'
 import {useParams} from 'react-router'
 import * as firebase from 'firebase'
 
-const useStyles = makeStyles((theme) => ({
-  seeMore: {
-    marginTop: theme.spacing(3),
-  },
-}));
 
 export default function Client() {
 
@@ -136,8 +130,6 @@ export default function Client() {
       })
   }
   
-  
-  const classes = useStyles();
   return (
     <div style={{marginLeft: '2em', marginBottom:'3em'}}>
         <h2>Name: {header.name} </h2>

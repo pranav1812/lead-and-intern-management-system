@@ -127,7 +127,7 @@ const useStyles = makeStyles((theme) => ({
 export default function Dashboard() {
   const classes = useStyles();
   const [consultant, setConsultant]= useState(false)
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -244,6 +244,7 @@ export default function Dashboard() {
             
               <Paper style={{width: '100%'}}>
                 <Switch>
+                  <Route exact path='/' component={Profile} />
                   <Route exact path='/profile/:uid' component={Profile} />
                   <Route exact path='/myLeads/:uid' component={MyLeads} />
                   <Route exact path='/myClients/:uid' component={MyClients} />

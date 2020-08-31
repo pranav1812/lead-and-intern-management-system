@@ -6,21 +6,14 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import {useParams} from 'react-router'
-import {auth, db} from '../../firebase'
+import {db} from '../../firebase'
 
 
-function preventDefault(event) {
-  event.preventDefault();
-}
 
-const useStyles = makeStyles((theme) => ({
-  seeMore: {
-    marginTop: theme.spacing(3),
-  },
-}));
+
 
 export default function MyLeads() {
-  const classes = useStyles();
+  
   const [name, setName]= useState(null)
   const [interest, setInterest]= useState(null)
   const [leads, setLeads]= useState(null)
@@ -46,9 +39,12 @@ export default function MyLeads() {
         addedOn: today,
         mail: mail,
         phone: phone
+      }).then(()=>{
+        alert("lead added successfully")
+        window.location.reload()
       })
 
-      alert("lead added successfully")
+      
     }else{
       alert("name and interest field are important")
     }
@@ -59,7 +55,7 @@ export default function MyLeads() {
       .then(snapshots=>{
         var temp=[]
         snapshots.forEach(doc=>{
-          temp.push({... doc.data(), id: doc.id})
+          temp.push({...doc.data(), id: doc.id})
         })
         setLeads(temp)
       })

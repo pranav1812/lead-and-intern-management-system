@@ -5,16 +5,12 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import {auth, db} from '../../firebase'
+import {db} from '../../firebase'
 
-const useStyles = makeStyles((theme) => ({
-  seeMore: {
-    marginTop: theme.spacing(3),
-  },
-}));
+
 
 export default function AllLeads() {
-  const classes = useStyles();
+  
   const [name, setName]= useState(null)
   const [interest, setInterest]= useState(null)
   const [leads, setLeads]= useState(null)
@@ -50,7 +46,7 @@ export default function AllLeads() {
       .then(snapshots=>{
         var temp=[]
         snapshots.forEach(doc=>{
-          temp.push({... doc.data(), id: doc.id})
+          temp.push({...doc.data(), id: doc.id})
         })
         setLeads(temp)
       })
